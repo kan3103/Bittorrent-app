@@ -7,6 +7,7 @@ def hash_info(info):
     info_hash_urlencoded = urllib.parse.quote(info_hash)
     print(f"info_hash: {info_hash_urlencoded}")
     return info_hash_urlencoded
+
 def send_started_request(tracker_url,info_hash, peer_id, port, downloaded=0, uploaded=0, left=0):
     tracker_url = f"http://{tracker_url}/peer" if not tracker_url.startswith("http") else tracker_url
     params = {
