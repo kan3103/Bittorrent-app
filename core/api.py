@@ -8,6 +8,7 @@ from client import Downloader
 from strategy import TitOrTat
 from server import Server
 from threading import Thread
+import time
 
 class Client:
     def __init__(self):
@@ -30,18 +31,22 @@ class Client:
     def create_torrent_from_dir(self, dir):
         torrent = Torrent.create_torrent_file(dir)
         self.torrents[torrent.info_hash] = torrent
+        return torrent.info_hash
         
+    def download(self, info_hash):
+        torrent = self.torrents[info_hash]
+        # peers = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'started'}).json()
+        peers = [
+            # {'ip':'172.18.0.2', 'port':8001},
+            # {'ip':'172.18.0.4', 'port':8002},
+            # {'ip':'172.18.0.5', 'port':8003}
+            # {'peer_id':"DlcCX7j*$6!A,]%WF?qu", 'ip':'127.0.0.1', 'port':8001},
+            {'peer_id':'DlcCX7j*$6!A,]%WF?qu', 'ip':'127.0.0.1', 'port':8000},
+        ]
 
-    def download(self, index):
-        torrent = self.torrents[index]
-        peers = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'started'}).json()
-        self.downloaders.append(Downloader(torrent, peers, TitOrTat()))
-        self.download_threads.append(Thread(target=self.downloaders[-1].start))
+        self.downloaders.append(Downloader(torrent.name + '.torrent', peers, TitOrTat()))
+        self.download_threads.append(Thread(target=self.downloaders[-1].start).start())
 
-    def stop(self, index):
-        torrent = self.torrents[index]
-        requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'stopped'})
-        self.downloaders[index].stop()
 
     
     def run_server(self):
@@ -55,5 +60,7 @@ class Client:
 
 if __name__ == '__main__':
     client = Client()
-    client.create_torrent_from_dir('downloads')
+    info_hash = client.create_torrent_from_dir('downloads')
     client.run_server()
+    time.sleep(1)
+    client.download(info_hash)
