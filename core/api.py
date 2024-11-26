@@ -47,7 +47,8 @@ class Client:
         self.downloaders.append(Downloader(torrent.name + '.torrent', peers, TitOrTat()))
         self.download_threads.append(Thread(target=self.downloaders[-1].start).start())
 
-
+    def get_info_hash(self, torrent_path):
+        return Torrent(torrent_path).info_hash
     
     def run_server(self):
         self.server_thread = Thread(target=self.server.start).start()
@@ -61,6 +62,6 @@ class Client:
 if __name__ == '__main__':
     client = Client()
     info_hash = client.create_torrent_from_dir('downloads')
-    client.run_server()
-    time.sleep(1)
+    # client.run_server()
+    # time.sleep(1)
     client.download(info_hash)
