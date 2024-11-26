@@ -53,7 +53,7 @@ class Client:
         self.server.join()
 
 
-if __name__ == '__main__':
-    client = Client()
-    client.create_torrent_from_dir('downloads')
-    client.run_server()
+# if __name__ == '__main__':
+#     client = Client()
+#     client.create_torrent_from_dir('downloads')
+#     client.run_server()
