@@ -11,7 +11,7 @@ import socket
 import bencodepy
 import request
 import files
-
+import create_torrent
 class DownloadThread(QtCore.QThread):
     finished = QtCore.pyqtSignal()
 
@@ -194,10 +194,15 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionCreate_torrent)
         self.menuFile.addAction(self.actionClose)
         self.menubar.addAction(self.menuFile.menuAction())
+        self.actionCreate_torrent.triggered.connect(self.show_create_torrent_dialog)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+    def show_create_torrent_dialog(self):
+        dialog = create_torrent.CreateTorrentDialog(self.centralwidget)
+        if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
+            print("Selected files:", dialog.selected_files)
         
     def update_progress(self,value,progress):
         progress.setValue(value)

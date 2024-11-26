@@ -36,6 +36,9 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+# torrent files
+*.torrent
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
@@ -120,7 +123,7 @@ celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
-
+.torrent
 # Environments
 .env
 .venv
