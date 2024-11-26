@@ -45,7 +45,8 @@ class Downloader:
             thread.start()
             self.downloading_threads.append(thread)
         
-
+        for t in self.downloading_threads:
+            t.join()
         if len(self.downloaded_pieces) == len(self.torrent.pieces):
             print("Download completed, you downloaded the whole file")
         else:
