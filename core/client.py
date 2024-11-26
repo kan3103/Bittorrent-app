@@ -16,7 +16,7 @@ class Downloader:
         self.strategy = strategy
         self.sources = {} # key: conn, value: list of pieces index
         self.requesting = set()
-        self.downloading_threads = []
+        self.running = True
 
     def start(self):
         conn_threads = []
@@ -39,13 +39,13 @@ class Downloader:
                     if isinstance(msg, UnchokeMessage):
                         self.sources[conn].append(piece_index)
                 
-
+        downloading_threads = []
         for peer, pieces in self.sources.items():
             thread = Thread(target=self.download_pieces, args=(peer, pieces))
             thread.start()
-            self.downloading_threads.append(thread)
+            downloading_threads.append(thread)
         
-        for t in self.downloading_threads:
+        for t in downloading_threads:
             t.join()
         if len(self.downloaded_pieces) == len(self.torrent.pieces):
             print("Download completed, you downloaded the whole file")
@@ -119,6 +119,8 @@ class Downloader:
 
     def download_pieces(self, conn, pieces):
         for piece_index in pieces:
+            while not self.running:
+                pass
             if self.request_block(conn, piece_index):
                 self.downloaded_pieces.append(piece_index)
                 ip, port = conn.getpeername()
@@ -157,6 +159,9 @@ class Downloader:
                 file_position = 0
 
     def stop(self):
-        pass
-        # for t in self.downloading_threads:
-        #     t.join()
+        self.running = False
+    
+    def resume(self):
+        self.running = True
+    
+    

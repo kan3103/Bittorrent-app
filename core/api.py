@@ -45,6 +45,7 @@ class Client:
         ]
 
         self.downloaders.append(Downloader(torrent.name + '.torrent', peers, TitOrTat()))
+        print("Starting download")
         self.download_threads.append(Thread(target=self.downloaders[-1].start).start())
 
     def add_torrent(self, torrent_file):
@@ -66,4 +67,6 @@ if __name__ == '__main__':
     info_hash = client.create_torrent_from_dir('downloads')
     client.run_server()
     time.sleep(1)
-    client.download(info_hash)
+    client.download(client.add_torrent('downloads.torrent'))
+    time.sleep(0.5)
+    
