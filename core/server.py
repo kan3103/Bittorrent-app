@@ -76,6 +76,7 @@ class Server:
     def recv_handshake(self, conn):
         msg = conn.recv(49 + len(PROTOCOL_NAME))
         handshake_rcv = Message.decode(b'\x13' + msg[1:])
+
         if handshake_rcv.info_hash not in self.torrents:
             print("Invalid info hash")
             conn.sendall(b'\xFF')
