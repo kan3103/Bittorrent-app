@@ -11,7 +11,7 @@ from threading import Thread
 
 class Client:
     def __init__(self):
-        self.torrents = {}
+        self.torrents = []
         self.downloaders = []
         self.download_threads = []
         self.strategy = TitOrTat()
@@ -24,13 +24,17 @@ class Client:
         for file_path in file_paths:
             shutil.copy(file_path, dir)
         torrent = Torrent.create_torrent_file(dir)
-        self.torrents[torrent.info_hash] = torrent
+        self.torrents.append(torrent)
         # print(os.path.abspath(self.torrent.name + ".torrent"))
     
     def create_torrent_from_dir(self, dir):
         torrent = Torrent.create_torrent_file(dir)
-        self.torrents[torrent.info_hash] = torrent
+        self.torrents.append(torrent)
         
+    def add_torrent(self, torrent_file):
+        torrent = Torrent(torrent_file)
+        self.torrents.append(torrent)
+        return self.torrents.index(torrent)
 
     def download(self, index):
         torrent = self.torrents[index]
@@ -52,8 +56,3 @@ class Client:
         self.downloader = None
         self.server.join()
 
-
-# if __name__ == '__main__':
-#     client = Client()
-#     client.create_torrent_from_dir('downloads')
-#     client.run_server()

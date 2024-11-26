@@ -156,5 +156,6 @@ class Downloader:
                 file_position = 0
 
     def stop(self):
-        for t in self.downloading_threads:
-            t.join()
+        pass
+        # for t in self.downloading_threads:
+        #     t.join()
