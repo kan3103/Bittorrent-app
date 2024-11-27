@@ -51,7 +51,7 @@ class Client:
     def add_torrent(self, torrent_file):
         torrent = Torrent(torrent_file)
         self.torrents[torrent.info_hash] = torrent
-        return torrent.info_hash
+        return torrent
     
     def run_server(self):
         self.server_thread = Thread(target=self.server.start).start()

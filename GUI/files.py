@@ -7,13 +7,12 @@ class Torrent_file:
         self.torrentfile = {}
     def add(self, info_hash ,torrent_data):
         files = []
-
+        size = 0
         if b'files' in torrent_data[b'info']:  # Multi-file torrent
             for file_info in torrent_data[b'info'][b'files']:
-                file_name = (file_info[b'path']).decode()
-                _,file_name = file_name.split("/",1)
+                file_name = (file_info[b'path'][0]).decode()
                 file_length = file_info[b'length']
-                print(file_length)
+                size += file_length
                 files.append({"name": file_name, "size": file_length, "status": "downloading"})
         else:  # Single-file torrent
             file_name = torrent_data[b'info'][b'name'].decode()
@@ -25,6 +24,7 @@ class Torrent_file:
             "files": files,
             "total_size": sum(f["size"] for f in files),
         }
+        return size
 
     
     def check(self, info_hash):
@@ -33,3 +33,10 @@ class Torrent_file:
         
     def get(self, info_hash):
         return self.torrentfile[info_hash]
+    
+    def update(self, info_hash, file_index, status):
+        if self.torrentfile[info_hash]:
+            self.torrentfile[info_hash]["files"][file_index]["status"] = status
+        
+    def delete(self, info_hash):
+        del self.torrentfile[info_hash]

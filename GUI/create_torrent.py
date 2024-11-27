@@ -1,11 +1,14 @@
 import os
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtWidgets
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'core'))
+from api import Client
 
 class CreateTorrentDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Create Torrent")
-        self.setGeometry(100, 100, 400, 300)
+        self.setGeometry(100, 100, 600, 400)  # Mở rộng kích thước cửa sổ
 
         layout = QtWidgets.QVBoxLayout(self)
 
@@ -27,6 +30,13 @@ class CreateTorrentDialog(QtWidgets.QDialog):
 
         layout.addLayout(button_layout)
 
+        torrent_name_label = QtWidgets.QLabel("Torrent Name:")
+        layout.addWidget(torrent_name_label)
+
+        self.torrent_name_input = QtWidgets.QLineEdit(self)
+        self.torrent_name_input.setPlaceholderText("Enter torrent name here...")
+        layout.addWidget(self.torrent_name_input)
+
         self.create_button = QtWidgets.QPushButton("Create Torrent", self)
         self.create_button.clicked.connect(self.create_torrent)
         layout.addWidget(self.create_button)
@@ -35,10 +45,10 @@ class CreateTorrentDialog(QtWidgets.QDialog):
         cancel_button.clicked.connect(self.reject)
         layout.addWidget(cancel_button)
 
+        self.client = Client()
         self.selected_files = []
 
     def add_files(self):
-
         files, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select Files", "", "All Files (*.*)")
         if files:
             for file in files:
@@ -57,9 +67,13 @@ class CreateTorrentDialog(QtWidgets.QDialog):
             self.file_list.takeItem(self.file_list.row(item))
 
     def create_torrent(self):
+        torrent_name = self.torrent_name_input.text().strip()
+        if not torrent_name:
+            QtWidgets.QMessageBox.warning(self, "Warning", "Please enter a torrent name.")
+            return
         if not self.selected_files:
             QtWidgets.QMessageBox.warning(self, "Warning", "Please select at least one file.")
             return
-
+        self.client.create_torrent_from_file_paths('Downloads'+os.sep+torrent_name, self.selected_files)
         QtWidgets.QMessageBox.information(self, "Success", "Torrent file created successfully!")
         self.accept()
