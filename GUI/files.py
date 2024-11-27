@@ -18,7 +18,7 @@ class Torrent_file:
             file_name = torrent_data[b'info'][b'name'].decode()
             file_length = torrent_data[b'info'][b'length']
             files.append({"name": file_name, "size": file_length, "status": "downloading"})
-        # Lưu thông tin torrent
+
         self.torrentfile[info_hash] = {
             "tracker_url": torrent_data[b'announce'].decode(),
             "files": files,
@@ -35,7 +35,7 @@ class Torrent_file:
         return self.torrentfile[info_hash]
     
     def update(self, info_hash, file_index, status):
-        if self.torrentfile[info_hash]:
+        if info_hash in self.torrentfile:
             self.torrentfile[info_hash]["files"][file_index]["status"] = status
         
     def delete(self, info_hash):
