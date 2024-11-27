@@ -57,10 +57,14 @@ class Client:
         self.server_thread = Thread(target=self.server.start).start()
 
     def stop(self, info_hash):
-        self.downloaders[info_hash].running = False
+        self.downloaders[info_hash].pause()
 
     def resume(self, info_hash):
-        self.downloaders[info_hash].running = True
+        self.downloaders[info_hash].resume()
+    
+    def remove(self, info_hash):
+        self.downloaders[info_hash].stop()
+        del self.downloaders[info_hash]
 
 
 

@@ -17,6 +17,7 @@ class Downloader:
         self.sources = {} # key: conn, value: list of pieces index
         self.requesting = set()
         self.running = True
+        self.cancled = False
 
     def start(self):
         conn_threads = []
@@ -120,7 +121,8 @@ class Downloader:
     def download_pieces(self, conn, pieces):
         for piece_index in pieces:
             while not self.running:
-                pass
+                if self.cancled:
+                    return
             if self.request_block(conn, piece_index):
                 self.downloaded_pieces.append(piece_index)
                 ip, port = conn.getpeername()
@@ -158,11 +160,19 @@ class Downloader:
                 file_index += 1
                 file_position = 0
 
-    def stop(self):
+    def pause(self):
         self.running = False
     
     def resume(self):
         self.running = True
 
+    def stop(self):
+        self.running = False
+        self.cancled = True
+        for conn in self.sources.keys():
+            conn.close()
+        self.sources = {}
+        self.pieces = {index: [] for index in range(len(self.torrent.pieces))}
+        self.downloaded_pieces = []
     
     
