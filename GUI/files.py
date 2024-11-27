@@ -35,7 +35,7 @@ class Torrent_file:
         return self.torrentfile[info_hash]
     
     def update(self, info_hash, file_index, status):
-        if self.torrentfile[info_hash]:
+        if info_hash in self.torrentfile:
             self.torrentfile[info_hash]["files"][file_index]["status"] = status
         
     def delete(self, info_hash):

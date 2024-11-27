@@ -192,6 +192,13 @@ class Ui_MainWindow(object):
         
         self.tableFile = TableTorrrent(parent=self.centralwidget,bool=False)
         self.tableFile.setGeometry(QtCore.QRect(50, 340, 721, 192))
+        
+        self.labelurl = QtWidgets.QLabel(parent=self.centralwidget)
+        self.labelurl.setGeometry(QtCore.QRect(500, 350, 72, 21))
+        self.labelurl.setObjectName("labelurl")
+        self.labelurl.setText("URL: ")
+        self.urltext = QtWidgets.QTextBrowser(parent=self.centralwidget)
+        self.urltext.setGeometry(QtCore.QRect(550, 350, 150, 21))
        
         self.runbutton = QtWidgets.QPushButton(parent=self.centralwidget)
         self.runbutton.setGeometry(QtCore.QRect(50, 90, 75, 23))
@@ -272,6 +279,8 @@ class Ui_MainWindow(object):
                     del self.download_threads[id]  
                     rows_to_remove.append(row)  
                     self.infofile.delete(id)
+                    self.tableFile.setRowCount(0)
+                    self.urltext.setText("")
     
         
         for row in sorted(rows_to_remove, reverse=True):
@@ -282,6 +291,7 @@ class Ui_MainWindow(object):
         widget = self.tableWidget.cellWidget(row, column)
         id = self.tableWidget.item(row, 0).text()
         tablefile = self.infofile.get(id)
+        self.urltext.setText(tablefile["tracker_url"])
         self.tableFile.setRowCount(0)
         for file in tablefile["files"]:
             self.tableFile.add_file_to_table(file['name'], file['size'], file['status'])
