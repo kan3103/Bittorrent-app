@@ -13,7 +13,7 @@ import time
 class Client:
     def __init__(self):
         self.torrents = {}
-        self.downloaders = []
+        self.downloaders = {}
         self.download_threads = []
         self.strategy = TitOrTat()
         self.server = Server(self.torrents, PEER_PORT, self.strategy)
@@ -44,22 +44,28 @@ class Client:
             {'peer_id':'DlcCX7j*$6!A,]%WF?qu', 'ip':'127.0.0.1', 'port':8000},
         ]
 
-        self.downloaders.append(Downloader(torrent, peers, TitOrTat()))
+        self.downloaders[info_hash] =  Downloader(torrent, peers, TitOrTat())
         print("Starting download")
-        self.download_threads.append(Thread(target=self.downloaders[-1].start).start())
+        self.download_threads.append(Thread(target=self.downloaders[info_hash].start).start())
 
     def add_torrent(self, torrent_file):
         torrent = Torrent(torrent_file)
         self.torrents[torrent.info_hash] = torrent
-        return torrent.info_hash
+        return torrent
     
     def run_server(self):
         self.server_thread = Thread(target=self.server.start).start()
 
-    def shutdown(self):
-        requests.get(self.torrent.announce, params={'info_hash':self.torrent.info_hash, 'peer_id':self.id, 'port':self.port, 'event':'stopped'})
-        self.downloader = None
-        self.server.join()
+    def stop(self, info_hash):
+        self.downloaders[info_hash].pause()
+
+    def resume(self, info_hash):
+        self.downloaders[info_hash].resume()
+    
+    def remove(self, info_hash):
+        self.downloaders[info_hash].stop()
+        del self.downloaders[info_hash]
+
 
 
 if __name__ == '__main__':

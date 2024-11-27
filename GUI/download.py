@@ -17,7 +17,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..','core'))
 from api import Client
 import time
 class DownloadThread(QtCore.QThread):
-    finished = QtCore.pyqtSignal()
 
     def __init__(self, id ,infofile, torrent, progress, status, parent=None):
         super().__init__(parent)
@@ -39,6 +38,11 @@ class DownloadThread(QtCore.QThread):
             self.mutex.unlock()
 
             if sum(file['downloaded'] for file in self.torrent.files_info) >= sum(file['length'] for file in self.torrent.files_info):
+                for index,file in enumerate(self.torrent.files_info):
+                    if file['downloaded'] == file['length']:
+                        self.infofile.update(self.id, index , "done")  
+                self.progress.setValue(int(sum([file['downloaded'] for file in self.torrent.files_info])/sum([file['length'] for file in self.torrent.files_info])*100))
+                self.status.setText("Done")
                 break
 
             for index,file in enumerate(self.torrent.files_info):
@@ -48,12 +52,7 @@ class DownloadThread(QtCore.QThread):
             QtCore.QThread.sleep(1)
 
         
-        for index,file in enumerate(self.torrent.files_info):
-                if file['downloaded'] == file['length']:
-                    self.infofile.update(self.id, index , "done")  
-        self.progress.setValue(int(sum([file['downloaded'] for file in self.torrent.files_info])/sum([file['length'] for file in self.torrent.files_info])*100))
-        self.status.setText("Done")
-        self.finished.emit() 
+        
 
     def gettorrent(self):
         return self.torrent
@@ -74,6 +73,7 @@ class DownloadThread(QtCore.QThread):
 
     def stop(self):
         """Dừng hẳn luồng."""
+        print("Stop download")
         self.is_running = False
         self.resume()  
 class TableTorrrent(QtWidgets.QTableWidget):
@@ -204,6 +204,7 @@ class Ui_MainWindow(object):
         self.pushButton_4 = QtWidgets.QPushButton(parent=self.centralwidget)
         self.pushButton_4.setGeometry(QtCore.QRect(690, 90, 75, 23))
         self.pushButton_4.setObjectName("pushButton_4")
+        self.pushButton_4.clicked.connect(self.cancle_selected_downloads)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
@@ -243,7 +244,7 @@ class Ui_MainWindow(object):
                 if id in self.download_threads:
                     torrent = self.download_threads[id].gettorrent()
                     self.download_threads[id].pause()
-                    # self.client.stop(torrent.info_hash)
+                    self.client.stop(torrent.info_hash)
                     self.tableWidget.item(row, 5).setText("Paused")
                     # print(f"Paused download for ID: {id}")
                     
@@ -254,10 +255,27 @@ class Ui_MainWindow(object):
                 id = self.tableWidget.item(row, 0).text()
                 if id in self.download_threads:
                     torrent = self.download_threads[id].gettorrent()
+                    self.client.resume(torrent.info_hash)
                     self.download_threads[id].resume()
-                    # self.client.stop(torrent.info_hash)
                     self.tableWidget.item(row, 5).setText("Downloading")
                     # print(f"Paused download for ID: {id}")
+    def cancle_selected_downloads(self):
+        rows_to_remove = []  # Lưu trữ các hàng cần xóa
+        for row in range(self.tableWidget.rowCount()):
+            checkbox = self.tableWidget.cellWidget(row, 1)
+            if checkbox and checkbox.isChecked():
+                id = self.tableWidget.item(row, 0).text()
+                if id in self.download_threads:
+                    torrent = self.download_threads[id].gettorrent()
+                    self.client.remove(torrent.info_hash) 
+                    self.download_threads[id].stop() 
+                    del self.download_threads[id]  
+                    rows_to_remove.append(row)  
+                    self.infofile.delete(id)
+    
+        
+        for row in sorted(rows_to_remove, reverse=True):
+            self.tableWidget.removeRow(row)
 
 
     def cell_clicked(self, row, column):
@@ -346,6 +364,7 @@ class Ui_MainWindow(object):
         self.label_2.setText(_translate("MainWindow", "Port"))
         self.pushButton_3.setText(_translate("MainWindow", "Pause"))
         self.pushButton_4.setText(_translate("MainWindow", "Cancel"))
+        self.runbutton.setText(_translate("MainWindow", "Run"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.actionCreate_torrent.setText(_translate("MainWindow", "Create torrent"))
         self.actionClose.setText(_translate("MainWindow", "Close"))
