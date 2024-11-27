@@ -8,8 +8,8 @@ import os
 
 
 class Downloader:
-    def __init__(self, torrent_file, peers, strategy):
-        self.torrent = Torrent(torrent_file)
+    def __init__(self, torrent, peers, strategy):
+        self.torrent = torrent
         self.pieces = {index: [] for index in range(len(self.torrent.pieces))}
         self.peers = peers  # TODO: get peers from tracker
         self.downloaded_pieces = [] # list of pieces index that have been downloaded

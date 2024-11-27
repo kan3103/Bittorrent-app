@@ -44,7 +44,7 @@ class Client:
             {'peer_id':'DlcCX7j*$6!A,]%WF?qu', 'ip':'127.0.0.1', 'port':8000},
         ]
 
-        self.downloaders.append(Downloader(torrent.name + '.torrent', peers, TitOrTat()))
+        self.downloaders.append(Downloader(torrent, peers, TitOrTat()))
         print("Starting download")
         self.download_threads.append(Thread(target=self.downloaders[-1].start).start())
 

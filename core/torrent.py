@@ -70,4 +70,17 @@ class Torrent:
     
         return Torrent(torrent_file)
 
+    def from_file(self, file):
+        with open(file, "rb") as f:
+            data = f.read()
+        torrent = decode_bencoded(bencodepy.decode(data))
+        self.name = torrent['info']['name']
+        self.announce = torrent['announce'] or TRACKER_URL
+        self.piece_length = torrent['piece length'] or PIECE_SIZE
+        paths = [self.name + os.sep + os.path.join(*file) for file in list_files_with_paths(self.name)]
+        self.files_info = [{"downloaded": 0, "length": os.path.getsize(path), "path": path} for path in paths]
+        self.files = torrent['info']['files']
+        self.pieces =  generate_pieces(paths)
+        self.info_hash = hashlib.sha1(bencodepy.encode(torrent['info'])).digest()
+        return self
     

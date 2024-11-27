@@ -50,5 +50,6 @@ if __name__ == '__main__':
             # {'peer_id':"DlcCX7j*$6!A,]%WF?qu", 'ip':'127.0.0.1', 'port':8001},
             {'peer_id':'DlcCX7j*$6!A,]%WF?qu', 'ip':'127.0.0.1', 'port':8000},
         ]
+        torrent = Torrent.from_file(args.torrent)
         downloader = Downloader(args.torrent, peers, strategy=TitOrTat())
         downloader.start()
