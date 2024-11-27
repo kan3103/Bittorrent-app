@@ -8,7 +8,7 @@ class CreateTorrentDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Create Torrent")
-        self.setGeometry(100, 100, 600, 400)  # Mở rộng kích thước cửa sổ
+        self.setGeometry(100, 100, 600, 400)  
 
         layout = QtWidgets.QVBoxLayout(self)
 

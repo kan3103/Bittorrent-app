@@ -266,8 +266,9 @@ class Ui_MainWindow(object):
                     self.download_threads[id].resume()
                     self.tableWidget.item(row, 5).setText("Downloading")
                     # print(f"Paused download for ID: {id}")
+                    
     def cancle_selected_downloads(self):
-        rows_to_remove = []  # Lưu trữ các hàng cần xóa
+        rows_to_remove = []  
         for row in range(self.tableWidget.rowCount()):
             checkbox = self.tableWidget.cellWidget(row, 1)
             if checkbox and checkbox.isChecked():
@@ -320,12 +321,6 @@ class Ui_MainWindow(object):
                 print(f"Plese choose a torrent file")
                 return
             
-            # url = torrent_data[b'announce'].decode()
-            # info_bencoded = bencodepy.encode(torrent_data[b'info'])
-            # info_hash=request.hash_info(info_bencoded)     
-            # if self.infofile.check(info_hash): # check torrent trùng
-            #     print("Torrent is already in the list")  
-            #     return
             try:    
                     file_name = os.path.basename(file_path)
                      
@@ -346,7 +341,6 @@ class Ui_MainWindow(object):
                     self.client.download(torrent.info_hash)
                     self.download_threads["TRT" + str(self.id)] = self.download_thread
                     self.id += 1
-                    # print(torrent.files_info[0]['downloaded'])
                     
 
    
