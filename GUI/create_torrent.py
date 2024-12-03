@@ -1,11 +1,13 @@
 import os
 from PyQt6 import QtWidgets
 import sys
+import requests
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'core'))
 from api import Client
 
 class CreateTorrentDialog(QtWidgets.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, client, parent=None):
+        self.client = client
         super().__init__(parent)
         self.setWindowTitle("Create Torrent")
         self.setGeometry(100, 100, 600, 400)  
@@ -44,8 +46,7 @@ class CreateTorrentDialog(QtWidgets.QDialog):
         cancel_button = QtWidgets.QPushButton("Cancel", self)
         cancel_button.clicked.connect(self.reject)
         layout.addWidget(cancel_button)
-
-        self.client = Client()
+        self.torrent = None
         self.selected_files = []
 
     def add_files(self):
@@ -74,6 +75,8 @@ class CreateTorrentDialog(QtWidgets.QDialog):
         if not self.selected_files:
             QtWidgets.QMessageBox.warning(self, "Warning", "Please select at least one file.")
             return
-        self.client.create_torrent_from_file_paths('Downloads'+os.sep+torrent_name, self.selected_files)
+        dir = self.client.make_dir(torrent_name, self.selected_files)
+        self.torrent = self.client.create_torrent(dir)
         QtWidgets.QMessageBox.information(self, "Success", "Torrent file created successfully!")
         self.accept()
+
