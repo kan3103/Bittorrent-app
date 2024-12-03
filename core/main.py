@@ -1,10 +1,12 @@
 from client import Downloader
 from server import Server
-from peer import Peer
 import threading
 import argparse
 from strategy import TitOrTat
 from torrent import Torrent
+import requests
+import os
+from constants import PEER_ID, PEER_PORT
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='CLI for BitTorrent peer')
@@ -15,41 +17,24 @@ if __name__ == '__main__':
     parser.add_argument('--port',type=int, help='Specify the port to run the server on')
     parser.add_argument('--download', action='store_true', help='Download the torrent')
     args = parser.parse_args()
+
+    torrents = {}
+    server_thread = None
+    strategy = TitOrTat()
+
     if args.create:
         Torrent.create_torrent_file(args.create)
 
-    if args.test:
-        peers = [Peer(torrent=args.torrent, port=test_port, strategy=TitOrTat()) for test_port in range(8000, 8005)]
-        threads = [threading.Thread(target=peer.start) for peer in peers]
-        peer_list = []
-        for peer in peers:
-            print(peer)
-            peer_list.append({
-                'peer_id':peer.server.peer_id,
-                'ip':'127.0.0.1',
-                'port':peer.server.port
-            })
-        for thread in threads:
-            thread.start()
-
-        downloader = Downloader(args.torrent, peer_list, TitOrTat())
-        downloader.start()
-
     if args.runserver:
-        strategy = TitOrTat()
         strategy.test_init_downloaded_from()
-        server = Server([Torrent(args.torrent)],port=args.port, strategy=strategy)
-        thread = threading.Thread(target=server.start)
-        thread.start()
+        server = Server(torrents, args.port, strategy)
+        server_thread = threading.Thread(target=server.start)
+        server_thread.start()
   
     if args.download:
-        peers = [
-            # {'ip':'172.18.0.2', 'port':8001},
-            # {'ip':'172.18.0.4', 'port':8002},
-            # {'ip':'172.18.0.5', 'port':8003}
-            # {'peer_id':"DlcCX7j*$6!A,]%WF?qu", 'ip':'127.0.0.1', 'port':8001},
-            {'peer_id':'DlcCX7j*$6!A,]%WF?qu', 'ip':'127.0.0.1', 'port':8000},
-        ]
-        torrent = Torrent.from_file(args.torrent)
-        downloader = Downloader(args.torrent, peers, strategy=TitOrTat())
+        torrent = Torrent(args.torrent)
+        torrents[torrent.info_hash] = torrent
+        resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':PEER_ID, 'port':PEER_PORT}).json()
+        peers = resp['peers'] or []
+        downloader = Downloader(torrent, peers, strategy)
         downloader.start()

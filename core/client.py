@@ -3,9 +3,7 @@ from constants import PROTOCOL_NAME, PEER_ID, PIECE_SIZE, BLOCK_SIZE
 from messages import HandshakeMessage, InterestedMessage, RequestMessage, BitfieldMessage, Message, UnchokeMessage
 import socket
 import hashlib
-from torrent import Torrent
 import os
-
 
 class Downloader:
     def __init__(self, torrent, peers, strategy):
@@ -134,7 +132,8 @@ class Downloader:
 
 
     def write_to_file(self, piece_index, piece):
-        dir_name = 'repo/'
+        # dir_name = 'repo/'
+        dir_name = ''
         file_position = piece_index * PIECE_SIZE
 
         file_index = 0
@@ -176,3 +175,4 @@ class Downloader:
         self.downloaded_pieces = []
     
     
+        
