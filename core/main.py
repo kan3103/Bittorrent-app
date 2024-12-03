@@ -6,6 +6,7 @@ from strategy import TitOrTat
 from torrent import Torrent
 import requests
 import os
+import time
 from constants import PEER_ID, PEER_PORT
 
 if __name__ == '__main__':
@@ -27,14 +28,18 @@ if __name__ == '__main__':
 
     if args.runserver:
         strategy.test_init_downloaded_from()
-        server = Server(torrents, args.port, strategy)
+        server = Server(torrents, args.port or 8000, strategy)
         server_thread = threading.Thread(target=server.start)
         server_thread.start()
   
     if args.download:
+        time.sleep(1)
         torrent = Torrent(args.torrent)
         torrents[torrent.info_hash] = torrent
-        resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':PEER_ID, 'port':PEER_PORT}).json()
-        peers = resp['peers'] or []
+        # resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':PEER_ID, 'port':PEER_PORT}).json()
+        # peers = resp['peers'] or []
+        peers = [
+            {'peer_id' :'DlcCX7j*$6!A,]%WF?qu', 'ip':'127.0.0.1', 'port':8000},
+        ]
         downloader = Downloader(torrent, peers, strategy)
         downloader.start()
