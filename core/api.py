@@ -19,7 +19,7 @@ class Client:
         self.server = Server(self.torrents, PEER_PORT, self.strategy)
         self.server_thread = None
 
-    def make_dir(dir, file_paths):
+    def make_dir(self, dir, file_paths):
         os.makedirs(dir, exist_ok=True)
 
         for file_path in file_paths:

@@ -11,6 +11,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 import socket
 import bencodepy
 import request
+import requests
 import files
 import create_torrent
 sys.path.append(os.path.join(os.path.dirname(__file__), '..','core'))
@@ -204,6 +205,9 @@ class Ui_MainWindow(object):
         self.runbutton.setGeometry(QtCore.QRect(50, 90, 75, 23))
         self.runbutton.setObjectName("runbutton")
         self.runbutton.clicked.connect(self.run_selected_downloads)
+        
+
+        
         self.pushButton_3 = QtWidgets.QPushButton(parent=self.centralwidget)
         self.pushButton_3.setGeometry(QtCore.QRect(610, 90, 75, 23))
         self.pushButton_3.setObjectName("pushButton_3")
@@ -235,10 +239,29 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        
     def show_create_torrent_dialog(self):
-        dialog = create_torrent.CreateTorrentDialog(self.centralwidget)
+        dialog = create_torrent.CreateTorrentDialog(self.client,self.centralwidget)
+        
         if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
             print("Selected files:", dialog.selected_files)
+            
+            torrent = dialog.torrent
+            size_in_bytes = self.infofile.add("TRT" + str(self.id), torrent.torrent_data,"uploading") 
+            size_in_mb = size_in_bytes / (1024 * 1024)  
+
+            progress, status = self.tableWidget.add_row_to_table(
+                torrent.name, 
+                f"{size_in_mb:.2f} MB",  
+                "Uploading", 
+                100, 
+                id=self.id
+            )
+            self.download_thread = DownloadThread("TRT" + str(self.id),self.infofile,torrent,progress,status)
+            # self.download_thread.start()
+            # self.client.download(torrent.info_hash)
+            self.download_threads["TRT" + str(self.id)] = self.download_thread
+            self.id += 1
         
     def update_progress(self,value,progress):
         progress.setValue(value)
@@ -253,7 +276,7 @@ class Ui_MainWindow(object):
                     self.download_threads[id].pause()
                     self.client.stop(torrent.info_hash)
                     self.tableWidget.item(row, 5).setText("Paused")
-                    # print(f"Paused download for ID: {id}")
+
                     
     def run_selected_downloads(self):
         for row in range(self.tableWidget.rowCount()):
@@ -265,7 +288,7 @@ class Ui_MainWindow(object):
                     self.client.resume(torrent.info_hash)
                     self.download_threads[id].resume()
                     self.tableWidget.item(row, 5).setText("Downloading")
-                    # print(f"Paused download for ID: {id}")
+
                     
     def cancle_selected_downloads(self):
         rows_to_remove = []  
@@ -308,7 +331,6 @@ class Ui_MainWindow(object):
                 
     def open_file_dialog(self):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self.centralwidget, "Choose a file to upload", "", "All Files (*.*)")
-            
         if file_path:
             self.textfile.setText(file_path)
             torrent =self.client.add_torrent(file_path)
@@ -322,28 +344,24 @@ class Ui_MainWindow(object):
                 return
             
             try:    
-                    file_name = os.path.basename(file_path)
+                file_name = os.path.basename(file_path)
                      
-                    size_in_bytes = self.infofile.add("TRT" + str(self.id), torrent_data)  # Thêm file torrent vào list
-                    size_in_mb = size_in_bytes / (1024 * 1024)  
+                size_in_bytes = self.infofile.add("TRT" + str(self.id), torrent_data,"downloading") 
+                size_in_mb = size_in_bytes / (1024 * 1024)  
 
-
-                    progress, status = self.tableWidget.add_row_to_table(
-                        file_name, 
-                        f"{size_in_mb:.2f} MB",  
-                        "Downloading", 
-                        0, 
-                        id=self.id
-                    )
-                    # print(torrent.info_hash)
-                    self.download_thread = DownloadThread("TRT" + str(self.id),self.infofile,torrent,progress,status)
-                    self.download_thread.start()
-                    self.client.download(torrent.info_hash)
-                    self.download_threads["TRT" + str(self.id)] = self.download_thread
-                    self.id += 1
-                    
-
-   
+                progress, status = self.tableWidget.add_row_to_table(
+                    file_name, 
+                    f"{size_in_mb:.2f} MB",  
+                    "Downloading", 
+                    0, 
+                    id=self.id
+                )
+                self.download_thread = DownloadThread("TRT" + str(self.id),self.infofile,torrent,progress,status)
+                self.download_thread.start()
+                self.client.download(torrent.info_hash)
+                self.download_threads["TRT" + str(self.id)] = self.download_thread
+                self.id += 1
+                
             except Exception as e:
                 print(f"Error: {e}")
 
