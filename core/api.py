@@ -39,12 +39,12 @@ class Client:
         
     def download(self, info_hash):
         torrent = self.torrents[info_hash]
-        # resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'started'}).json()
-        peers = [
-            {'peer_id' :'DlcCX7j*$6!A,]%WF?qu', 'ip':'127.0.0.1', 'port':8001},
-        ]
-        print(peers)
-        # peers = resp['peers'] or []
+        resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'started'}).json()
+        # peers = [
+        #     {'peer_id' :'DlcCX7j*$6!A,]%WF?qu', 'ip':'127.0.0.1', 'port':8001},
+        # ]
+        # print(peers)
+        peers = resp['peers'] or []
         self.downloaders[info_hash] =  Downloader(torrent, peers, TitOrTat())
         print("Starting download")
         self.download_threads.append(Thread(target=self.downloaders[info_hash].start).start())

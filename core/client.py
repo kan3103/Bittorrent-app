@@ -145,8 +145,8 @@ class Downloader:
     
     
     def write_to_file(self, piece_index, piece):
-        dir_name = 'test/'
-        # dir_name = ''  # If you want to change the directory
+        # dir_name = 'test/'
+        dir_name = ''  # If you want to change the directory
 
         # Calculate the position of the current piece in the file sequence
         file_position = piece_index * PIECE_SIZE
