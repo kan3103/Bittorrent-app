@@ -28,6 +28,7 @@ class Client:
 
     def create_torrent(self, dir):
         torrent = Torrent.create_torrent_file(dir)
+        resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'started'}).json()
         self.torrents[torrent.info_hash] = torrent
         return torrent
     
@@ -69,10 +70,6 @@ class Client:
 
 if __name__ == '__main__':
     client = Client()
-    info_hash = client.create_torrent('downloads')
+    client.create_torrent('hehe')
     client.run_server()
-    time.sleep(1)
-    client.download(client.add_torrent('downloads.torrent').info_hash)
-    client.get_downloading_torrents()
-    time.sleep(0.5)
     

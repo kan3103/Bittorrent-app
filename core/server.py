@@ -1,9 +1,8 @@
 from messages import HandshakeMessage, BitfieldMessage, InterestedMessage,RequestMessage, UnchokeMessage, PieceMessage, Message, ChokeMessage
 from utils import  generate_pieces
-from constants import PIECE_SIZE, PROTOCOL_NAME
+from constants import PIECE_SIZE, PROTOCOL_NAME, PEER_ID
 import socket
-from threading import Thread, Lock
-import random, string, secrets
+from threading import Thread
 
 
 def get_bitfield(torrent):
@@ -22,7 +21,6 @@ def get_bitfield(torrent):
     for (i, piece) in enumerate(pieces):
         if piece in original_pieces:
             bitfield[i] ^= 0x01
-    print(bitfield)
     return bitfield
 
 
@@ -36,8 +34,7 @@ class Server:
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         self.strategy = strategy
-        characters = string.ascii_letters + string.digits + string.punctuation
-        self.peer_id = ''.join(secrets.choice(characters) for _ in range(20))
+        self.peer_id = PEER_ID
         
     def start(self):
         self.server.bind(('0.0.0.0', self.port))

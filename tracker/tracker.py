@@ -80,4 +80,4 @@ def handle_event():
 
 if __name__ == "__main__":
     load_peers()
-    app.run(host="0.0.0.0", port=8000)
+    app.run(host="0.0.0.0", port=8080)
