@@ -14,10 +14,10 @@ class Client:
     def __init__(self):
         self.torrents = {}
         self.downloaders = {}
-        self.download_threads = []
         self.strategy = TitOrTat()
         self.server = Server(self.torrents, PEER_PORT, self.strategy)
         self.server_thread = None
+        self.peers = {}
 
     def make_dir(self, dir, file_paths):
         os.makedirs(dir, exist_ok=True)
@@ -28,7 +28,10 @@ class Client:
 
     def create_torrent(self, dir):
         torrent = Torrent.create_torrent_file(dir)
-        resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'started'}).json()
+        try:
+            resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'started'}).json()
+        except:
+            print("Could not connect to tracker, use local peers")
         self.torrents[torrent.info_hash] = torrent
         return torrent
     
@@ -40,15 +43,22 @@ class Client:
         
     def download(self, info_hash):
         torrent = self.torrents[info_hash]
-        resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'started'}).json()
+        peers = []
+        try:
+            resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'started'}).json()
+            peers = resp['peers']
+        except:
+            print("Could not connect to tracker, use local peers")
+
+
         # peers = [
-        #     {'peer_id' :'DlcCX7j*$6!A,]%WF?qu', 'ip':'127.0.0.1', 'port':8001},
+        #     {'peer_id' :'peer5678901234567898', 'ip':'127.0.0.1', 'port':8001},
+        #     {'peer_id' :'peer5678901234567899', 'ip':'127.0.0.1', 'port':8002},
         # ]
-        # print(peers)
-        peers = resp['peers'] or []
+
         self.downloaders[info_hash] =  Downloader(torrent, peers, TitOrTat())
         print("Starting download")
-        self.download_threads.append(Thread(target=self.downloaders[info_hash].start).start())
+        self.downloaders[info_hash].start()
 
     def get_downloading_torrents(self):
         return [val.torrent for val in self.downloaders.values()]
@@ -56,20 +66,14 @@ class Client:
     def run_server(self):
         self.server_thread = Thread(target=self.server.start).start()
 
-    def stop(self, info_hash):
-        self.downloaders[info_hash].pause()
-
-    def resume(self, info_hash):
-        self.downloaders[info_hash].resume()
-    
-    def remove(self, info_hash):
-        self.downloaders[info_hash].stop()
-        del self.downloaders[info_hash]
-
 
 
 if __name__ == '__main__':
     client = Client()
-    client.create_torrent('hehe')
-    client.run_server()
+    torret = client.add_torrent('test.torrent')
+    client.download(torret.info_hash)
+
+    # client = Client()
+    # client.create_torrent('test')
+    # client.run_server()
     
