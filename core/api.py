@@ -29,7 +29,7 @@ class Client:
     def create_torrent(self, dir):
         torrent = Torrent.create_torrent_file(dir)
         try:
-            resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'started'}).json()
+            resp = requests.get(torrent.announce, params={'info_hash':torrent.info_hash, 'peer_id':self.server.peer_id, 'port':self.server.port, 'event':'completed'}).json()
         except:
             print("Could not connect to tracker, use local peers")
         self.torrents[torrent.info_hash] = torrent
@@ -58,7 +58,7 @@ class Client:
 
         self.downloaders[info_hash] =  Downloader(torrent, peers, TitOrTat())
         print("Starting download")
-        self.downloaders[info_hash].start()
+        Thread(target=self.downloaders[info_hash].start).start()
 
     def get_downloading_torrents(self):
         return [val.torrent for val in self.downloaders.values()]

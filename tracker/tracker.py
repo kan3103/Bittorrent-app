@@ -57,6 +57,15 @@ def handle_event():
             return jsonify({"error": "Port must be int"}), 400
 
     if event == "started":
+        return jsonify({'peers': file_peers[info_hash]})
+
+    elif event == "stopped":
+        if not peer_id or not port:
+            return jsonify({"error": "peer_id and port is required "}), 400
+        removed = remove_peer(info_hash, peer_id, port)
+        return jsonify({"success": removed})
+    
+    elif event == "completed":
         if not peer_id or not port:
             return jsonify({"error": "peer_id and port is required"}), 400
         
@@ -66,14 +75,6 @@ def handle_event():
         if not any(peer["peer_id"] == peer_id and peer["port"] == port for peer in file_peers[info_hash]):
             file_peers[info_hash].append({"peer_id": peer_id, "ip" : request.remote_addr, "port": port})
             save_peers()
-        
-        return jsonify({'peers': file_peers[info_hash]})
-
-    elif event == "stopped":
-        if not peer_id or not port:
-            return jsonify({"error": "peer_id and port is required "}), 400
-        removed = remove_peer(info_hash, peer_id, port)
-        return jsonify({"success": removed})
     else:
         return jsonify({"error": "Invalid event"}), 400
 
