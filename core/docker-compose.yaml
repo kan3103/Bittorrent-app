@@ -1,0 +1,13 @@
+services:
+  peer1:
+    image: netapp
+    networks:
+      - p2p
+  peer2:
+    image: netapp
+    networks:
+      - p2p
+
+networks:
+  p2p:
+    driver: bridge
